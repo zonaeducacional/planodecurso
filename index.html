@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Plano de Curso · BNCC</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2436;
+    --border: #2a3048;
+    --accent: #4f9cf9;
+    --accent2: #7b68ee;
+    --gold: #f5c842;
+    --text: #e8ecf5;
+    --muted: #7a85a3;
+    --success: #34d399;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Decorative background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -30%;
+    right: -20%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(79,156,249,0.07) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(123,104,238,0.07) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    z-index: 2;
+    padding: 48px 0 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(79,156,249,0.04) 0%, transparent 100%);
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,156,249,0.1);
+    border: 1px solid rgba(79,156,249,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .logo-badge::before {
+    content: '⬡';
+    font-size: 14px;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  header p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin-inline: auto;
+    line-height: 1.6;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Section headers */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    margin-top: 40px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-label span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 10px;
+    color: var(--accent);
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+
+  .card:focus-within {
+    border-color: rgba(79,156,249,0.4);
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Fields */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,156,249,0.12);
+  }
+
+  select option { background: var(--surface2); }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  /* Checkbox groups */
+  .check-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 14px;
+    user-select: none;
+  }
+
+  .check-item:hover { border-color: rgba(79,156,249,0.35); }
+
+  .check-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .check-item.checked {
+    border-color: rgba(79,156,249,0.45);
+    background: rgba(79,156,249,0.07);
+  }
+
+  /* Pills row for metodologias */
+  .pills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  /* Submit */
+  .btn-generate {
+    width: 100%;
+    margin-top: 36px;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-generate:active { transform: translateY(0); }
+
+  .btn-generate svg { width: 18px; height: 18px; }
+
+  /* Output */
+  #output-section {
+    display: none;
+    margin-top: 40px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .output-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .output-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .output-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+  .output-actions { display: flex; gap: 10px; }
+
+  .btn-sm {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s, transform 0.15s;
+    text-decoration: none;
+  }
+
+  .btn-sm:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-copy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-claude {
+    background: linear-gradient(135deg, #d4a843, #e8803a);
+    color: #fff;
+  }
+
+  #prompt-output {
+    padding: 24px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #c8d2e8;
+    white-space: pre-wrap;
+    font-family: 'DM Mono', 'Courier New', monospace;
+    max-height: 520px;
+    overflow-y: auto;
+  }
+
+  #prompt-output::-webkit-scrollbar { width: 6px; }
+  #prompt-output::-webkit-scrollbar-track { background: transparent; }
+  #prompt-output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .copy-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--success);
+    color: #0a1a12;
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* outros field */
+  .outros-field {
+    margin-top: 8px;
+    display: none;
+  }
+  .outros-field.visible { display: block; }
+
+  /* Required asterisk */
+  .req { color: var(--accent); margin-left: 2px; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-badge">Educação · BNCC</div>
+  <h1>Gerador de <em>Plano de Curso</em></h1>
+  <p>Preencha os dados abaixo e gere automaticamente o prompt alinhado à BNCC para criar seu plano de curso completo.</p>
+</header>
+
+<div class="container">
+
+  <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
+  <div class="section-label"><span>1</span> Identificação</div>
+  <div class="card">
+    <div class="grid-2" style="gap:16px">
+      <div class="field">
+        <label>Nome do Professor <span class="req">*</span></label>
+        <input type="text" id="professor" placeholder="Ex: Maria Silva">
+      </div>
+      <div class="field">
+        <label>Nome da Escola <span class="req">*</span></label>
+        <input type="text" id="escola" placeholder="Ex: E.E. Prof. João Batista">
+      </div>
+    </div>
+    <div class="grid-3" style="gap:16px; margin-top:16px">
+      <div class="field">
+        <label>Ano Letivo <span class="req">*</span></label>
+        <input type="number" id="ano_letivo" placeholder="Ex: 2025" min="2020" max="2030">
+      </div>
+      <div class="field">
+        <label>Etapa <span class="req">*</span></label>
+        <select id="etapa" onchange="updateSeries()">
+          <option value="">Selecione...</option>
+          <option>Educação Infantil</option>
+          <option>Ensino Fundamental – Anos Iniciais</option>
+          <option>Ensino Fundamental – Anos Finais</option>
+          <option>EJA</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Série / Ano <span class="req">*</span></label>
+        <select id="serie">
+          <option value="">Selecione a Etapa primeiro...</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="gap:16px; margin-top:16px">
+      <div class="field">
+        <label>Área do Conhecimento <span class="req">*</span></label>
+        <select id="area">
+          <option value="">Selecione...</option>
+          <option>Linguagens e suas Tecnologias</option>
+          <option>Matemática e suas Tecnologias</option>
+          <option>Ciências da Natureza e suas Tecnologias</option>
+          <option>Ciências Humanas e Sociais Aplicadas</option>
+          <option>Formação Técnica e Profissional</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Disciplina <span class="req">*</span></label>
+        <select id="disciplina" onchange="updateEmenta()">
+          <option value="">Selecione...</option>
+          <option>Língua Portuguesa</option>
+          <option>Matemática</option>
+          <option>História</option>
+          <option>Geografia</option>
+          <option>Ciências</option>
+          <option>Literatura e Produção Textual</option>
+          <option>Arte</option>
+          <option>Educação Física</option>
+          <option>Inglês</option>
+          <option>Religião</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2" style="gap:16px; margin-top:16px">
+      <div class="field">
+        <label>Periodicidade <span class="req">*</span></label>
+        <select id="periodicidade">
+          <option value="Anual">Anual</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Carga Horária Total</label>
+        <input type="text" id="carga_horaria" placeholder="Ex: 160 horas / 200 aulas">
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 2: EMENTA E CONTEXTO -->
+  <div class="section-label"><span>2</span> Ementa e Contexto</div>
+  <div class="card">
+    <div class="field">
+      <label>Ementa <span class="req">*</span></label>
+      <textarea id="ementa" rows="5" placeholder="Selecione a Série/Ano e a Disciplina acima para gerar automaticamente a ementa baseada na BNCC, ou escreva aqui sua própria ementa..."></textarea>
+    <p id="ementa-hint" style="font-size:11px;color:var(--accent);margin-top:6px;display:none">✦ Ementa gerada automaticamente com base na BNCC — você pode editar livremente.</p>
+    </div>
+    <div class="field" style="margin-top:16px">
+      <label>Recursos Didáticos</label>
+      <textarea id="recursos" rows="3" placeholder="Ex: Livro didático, projetor, laboratório de informática, materiais manipuláveis, videoaulas..."></textarea>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 3: METODOLOGIAS -->
+  <div class="section-label"><span>3</span> Metodologias</div>
+  <div class="card">
+    <p style="font-size:13px; color:var(--muted); margin-bottom:16px">Selecione uma ou mais metodologias que serão adotadas:</p>
+    <div class="pills-grid" id="metodologias-container">
+      <!-- gerado via JS -->
+    </div>
+    <div class="outros-field" id="outros-met-field">
+      <label style="margin-top:12px; display:block">Outras metodologias</label>
+      <input type="text" id="outros-met" placeholder="Descreva outras metodologias...">
+    </div>
+  </div>
+
+  <!-- SEÇÃO 4: AVALIAÇÃO -->
+  <div class="section-label"><span>4</span> Avaliação</div>
+  <div class="card">
+    <p style="font-size:13px; color:var(--muted); margin-bottom:4px">
+      Conforme a LDB, a avaliação deve ser contínua e cumulativa, com prevalência dos aspectos qualitativos sobre os quantitativos. Selecione os instrumentos de avaliação:
+    </p>
+    <div class="pills-grid" id="avaliacao-container" style="margin-top:16px">
+      <!-- gerado via JS -->
+    </div>
+    <div class="outros-field" id="outros-aval-field">
+      <label style="margin-top:12px; display:block">Outros instrumentos</label>
+      <input type="text" id="outros-aval" placeholder="Descreva outros instrumentos...">
+    </div>
+  </div>
+
+  <!-- BOTÃO GERAR -->
+  <button class="btn-generate" onclick="generatePrompt()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+    Gerar Prompt do Plano de Curso
+  </button>
+
+  <!-- OUTPUT -->
+  <div id="output-section">
+    <div class="output-card">
+      <div class="output-topbar">
+        <div class="output-topbar-left">
+          <div class="dot"></div>
+          Prompt Gerado — Pronto para usar
+        </div>
+        <div class="output-actions">
+          <button class="btn-sm btn-copy" onclick="copyPrompt()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copiar Prompt
+          </button>
+
+        </div>
+      </div>
+      <div id="prompt-output"></div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; align-items:center;">
+      <button class="btn-sm btn-copy" onclick="copyPrompt()" style="padding:12px 24px; font-size:14px; flex:1; min-width:180px; justify-content:center; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar Prompt
+      </button>
+      <a href="https://claude.ai/new" target="_blank" class="btn-sm btn-claude" style="padding:12px 28px; font-size:15px; font-weight:700; flex:1; min-width:220px; justify-content:center; border-radius:10px; letter-spacing:0.03em; box-shadow:0 4px 20px rgba(212,168,67,0.3);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        ✦ Abrir no Claude.ai e Gerar o Plano
+      </a>
+    </div>
+    <p style="margin-top:10px; font-size:12px; color:var(--muted); text-align:center; line-height:1.6">
+      1. Copie o prompt &nbsp;→&nbsp; 2. Clique em "Abrir no Claude.ai" &nbsp;→&nbsp; 3. Cole o prompt e peça o plano em <strong>.docx</strong>
+    </p>
+  </div>
+
+</div>
+
+<div class="copy-toast" id="copy-toast">✓ Prompt copiado!</div>
+
+<script>
+const METODOLOGIAS = [
+  'Aula Expositiva Dialogada',
+  'Aprendizagem Baseada em Projetos (ABP)',
+  'Aprendizagem Baseada em Problemas',
+  'Sala de Aula Invertida',
+  'Gamificação',
+  'Aprendizagem Cooperativa',
+  'Sequência Didática',
+  'Metodologia Científica / Investigativa',
+  'Ensino Híbrido',
+  'Debates',
+  'Estudo de Caso',
+  'Projeto Interdisciplinar',
+  'Outros',
+];
+
+const AVALIACOES = [
+  'Avaliação Diagnóstica',
+  'Avaliação Formativa (contínua)',
+  'Avaliação Somativa',
+  'Rubrica de Avaliação',
+  'Prova / Teste Escrito',
+  'Trabalho em Grupo',
+  'Apresentação Oral / Seminário',
+  'Portfólio',
+  'Autoavaliação',
+  'Avaliação por Pares',
+  'Outros',
+];
+
+// Series by etapa
+const SERIES_MAP = {
+  'Educação Infantil': ['Berçário I', 'Berçário II', 'Maternal I', 'Maternal II', 'Pré I', 'Pré II'],
+  'Ensino Fundamental – Anos Iniciais': ['1º ano','2º ano','3º ano','4º ano','5º ano'],
+  'Ensino Fundamental – Anos Finais': ['6º ano','7º ano','8º ano','9º ano'],
+  'EJA': ['EJA – Fase I','EJA – Fase II','EJA – Fase III','EJA – Fase IV'],
+};
+
+function updateSeries() {
+  const etapa = document.getElementById('etapa').value;
+  const serieSelect = document.getElementById('serie');
+  serieSelect.innerHTML = '<option value="">Selecione...</option>';
+  if (SERIES_MAP[etapa]) {
+    SERIES_MAP[etapa].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      serieSelect.appendChild(opt);
+    });
+  }
+  updateEmenta();
+}
+
+// Ementa database per disciplina + serie
+const EMENTAS = {
+  // Educação Infantil
+  'Berçário I': { default: 'Desenvolvimento integral da criança de 0 a 1 ano por meio de interações e brincadeiras, conforme a BNCC – Educação Infantil (campos de experiência).' },
+  'Berçário II': { default: 'Desenvolvimento integral da criança de 1 a 2 anos por meio de interações e brincadeiras, conforme a BNCC – Educação Infantil.' },
+  'Maternal I': { default: 'Desenvolvimento integral da criança de 2 a 3 anos, com foco nos campos de experiência da BNCC: O eu, o outro e o nós; Corpo, gestos e movimentos; Traços, sons, cores e formas; Escuta, fala, pensamento e imaginação; Espaços, tempos, quantidades, relações e transformações.' },
+  'Maternal II': { default: 'Desenvolvimento integral da criança de 3 a 4 anos por meio de brincadeiras, interações e diferentes linguagens, articulando os 5 campos de experiência da BNCC.' },
+  'Pré I': { default: 'Ampliação das vivências e saberes da criança de 4 anos, com ênfase nos campos de experiência da BNCC, preparando para a transição ao Ensino Fundamental.' },
+  'Pré II': { default: 'Consolidação das aprendizagens e desenvolvimento de habilidades essenciais para a criança de 5 anos, nos 5 campos de experiência da BNCC, garantindo a transição plena ao Ensino Fundamental.' },
+  // Anos Iniciais
+  '1º ano': {
+    'Língua Portuguesa': 'Desenvolvimento da consciência fonológica e introdução ao sistema de escrita alfabética (SEA); compreensão e produção de textos orais e escritos; valorização da literatura infantil e das práticas de leitura e escrita em contextos significativos, conforme as habilidades EF01LP da BNCC.',
+    'Matemática': 'Introdução aos números naturais (0 a 99), operações de adição e subtração, noções de geometria plana e espacial, grandezas e medidas não convencionais e organização de dados em listas, conforme as habilidades EF01MA da BNCC.',
+    'História': 'Estudo da identidade, da família, da escola e das primeiras comunidades; noções de tempo (antes/depois, passado/presente); valorização das histórias pessoais e coletivas, conforme EF01HI da BNCC.',
+    'Geografia': 'Reconhecimento do espaço vivido (casa, escola, bairro); noções de localização e orientação espacial; relação ser humano e natureza no cotidiano, conforme EF01GE da BNCC.',
+    'Ciências': 'Exploração do mundo ao redor: corpo humano, seres vivos, materiais do cotidiano, fenômenos naturais; desenvolvimento da curiosidade científica e do olhar investigativo, conforme EF01CI da BNCC.',
+    'Arte': 'Exploração das linguagens artísticas (artes visuais, música, teatro e dança); desenvolvimento da expressão criativa e da apreciação estética, conforme EF15AR da BNCC.',
+    'Educação Física': 'Vivência de brincadeiras, jogos e práticas corporais diversificadas; desenvolvimento das habilidades motoras fundamentais e da cultura corporal de movimento, conforme EF01EF da BNCC.',
+    'Inglês': 'Iniciação à Língua Inglesa por meio de brincadeiras, músicas, jogos e rotinas comunicativas simples; desenvolvimento da consciência linguística e cultural, conforme a BNCC.',
+    'Religião': 'Reconhecimento da diversidade religiosa e cultural; valorização do respeito mútuo e da identidade pessoal; narrativas fundantes de diferentes tradições religiosas, conforme EF01ER da BNCC.',
+    'Literatura e Produção Textual': 'Contato com textos literários variados (contos, poemas, parlendas); desenvolvimento do gosto pela leitura; produção de textos coletivos e individuais com mediação docente, conforme EF01LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 1º ano do Ensino Fundamental – Anos Iniciais, conforme as competências e habilidades da BNCC.'
+  },
+  '2º ano': {
+    'Língua Portuguesa': 'Consolidação do sistema de escrita alfabética; leitura fluente de textos simples; produção de textos narrativos e informativos; ampliação do vocabulário e das práticas de oralidade, conforme EF02LP da BNCC.',
+    'Matemática': 'Números naturais até 999; operações de adição e subtração com reagrupamento; introdução à multiplicação; geometria (figuras planas e espaciais); medidas de comprimento e massa, conforme EF02MA da BNCC.',
+    'História': 'A vida em família e na comunidade; as diferentes formas de organização familiar e social; o tempo e as transformações; registros históricos da comunidade local, conforme EF02HI da BNCC.',
+    'Geografia': 'O lugar de vivência e seus elementos naturais e humanos; transformações da paisagem; modos de vida urbano e rural; primeiras noções cartográficas, conforme EF02GE da BNCC.',
+    'Ciências': 'Estudo dos seres vivos (plantas e animais), fenômenos meteorológicos, propriedades dos materiais e preservação ambiental no cotidiano, conforme EF02CI da BNCC.',
+    'Arte': 'Exploração e produção nas linguagens visual, musical, cênica e da dança; apreciação de manifestações artísticas da cultura local e brasileira, conforme EF15AR da BNCC.',
+    'Educação Física': 'Jogos e brincadeiras tradicionais, populares e digitais; ginástica geral; práticas de aventura na escola; desenvolvimento motor e social, conforme EF02EF da BNCC.',
+    'Inglês': 'Ampliação do repertório lexical em inglês por meio de temas do cotidiano; compreensão oral e interação em situações simples de comunicação, conforme a BNCC.',
+    'Religião': 'Diversidade de crenças e manifestações religiosas; espaços sagrados; festas e celebrações de diferentes tradições; convivência respeitosa, conforme EF02ER da BNCC.',
+    'Literatura e Produção Textual': 'Leitura e análise de textos literários (fábulas, contos, poemas); produção de narrativas simples; desenvolvimento da criatividade e da autoria na escrita, conforme EF02LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 2º ano do Ensino Fundamental – Anos Iniciais, conforme as competências e habilidades da BNCC.'
+  },
+  '3º ano': {
+    'Língua Portuguesa': 'Leitura com fluência e compreensão; análise linguística (ortografia, pontuação, morfologia básica); produção de textos narrativos, descritivos e instrucionais; práticas de oralidade e escuta, conforme EF03LP da BNCC.',
+    'Matemática': 'Números naturais até 9.999; as quatro operações; frações simples; geometria (ângulos e polígonos); medidas de tempo, capacidade e massa; tabelas e gráficos, conforme EF03MA da BNCC.',
+    'História': 'As comunidades locais e regionais; a cidade e o campo; patrimônio histórico e cultural; noções de cidadania e direitos, conforme EF03HI da BNCC.',
+    'Geografia': 'O campo e a cidade; os biomas brasileiros; uso e preservação dos recursos naturais; primeiras noções de escala e representação cartográfica, conforme EF03GE da BNCC.',
+    'Ciências': 'Ciclos da vida; alimentação saudável; estados físicos da matéria; fenômenos naturais e preservação do meio ambiente, conforme EF03CI da BNCC.',
+    'Arte': 'Produção e apreciação nas artes visuais, música, teatro e dança; relação arte-cultura-identidade; patrimônio cultural brasileiro, conforme EF15AR da BNCC.',
+    'Educação Física': 'Jogos esportivos e de aventura; ginástica rítmica e de condicionamento; brincadeiras e jogos de matriz indígena e africana; saúde e bem-estar, conforme EF35EF da BNCC.',
+    'Inglês': 'Práticas de leitura, escrita, escuta e fala em inglês em contextos comunicativos; gêneros textuais simples; ampliação do vocabulário temático, conforme EF03LI da BNCC.',
+    'Religião': 'Tradições orais e escritas das diferentes religiões; símbolos religiosos; cuidado com a natureza nas tradições religiosas, conforme EF03ER da BNCC.',
+    'Literatura e Produção Textual': 'Literatura brasileira e mundial para crianças; análise de elementos narrativos; produção de textos com coesão e coerência; projeto de escritor, conforme EF03LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 3º ano do Ensino Fundamental – Anos Iniciais, conforme as competências e habilidades da BNCC.'
+  },
+  '4º ano': {
+    'Língua Portuguesa': 'Leitura crítica e interpretação de diferentes gêneros; análise linguística (morfossintaxe); produção de textos argumentativos e de opinião; práticas de escuta e fala em contextos formais, conforme EF04LP da BNCC.',
+    'Matemática': 'Números naturais e decimais; as quatro operações com números maiores; frações equivalentes; geometria (perímetro e área); grandezas proporcionais; probabilidade introdutória, conforme EF04MA da BNCC.',
+    'História': 'A formação do Brasil: povos indígenas, africanos e europeus; colonização e resistência; patrimônio histórico nacional, conforme EF04HI da BNCC.',
+    'Geografia': 'O território brasileiro: regiões, estados e capitais; diversidade climática e cultural; relações entre natureza, sociedade e economia, conforme EF04GE da BNCC.',
+    'Ciências': 'Misturas e soluções; propriedades dos materiais; cadeia alimentar; adaptação dos seres vivos ao ambiente; sustentabilidade, conforme EF04CI da BNCC.',
+    'Arte': 'Arte como forma de expressão cultural; relações entre arte brasileira e arte mundial; criação e fruição em diferentes linguagens artísticas, conforme EF15AR da BNCC.',
+    'Educação Física': 'Esportes coletivos e individuais; lutas e práticas corporais de aventura; corpo e saúde; inclusão e respeito à diversidade nas práticas corporais, conforme EF35EF da BNCC.',
+    'Inglês': 'Uso da língua inglesa em práticas sociais significativas; gêneros textuais do cotidiano; estratégias de leitura e produção oral e escrita, conforme EF04LI da BNCC.',
+    'Religião': 'Imanência e transcendência; rituais e celebrações das tradições religiosas; diálogo inter-religioso e respeito à diversidade, conforme EF04ER da BNCC.',
+    'Literatura e Produção Textual': 'Gêneros literários variados; análise da linguagem literária; produção de textos criativos com progressiva autonomia; leitura literária como prática social, conforme EF04LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 4º ano do Ensino Fundamental – Anos Iniciais, conforme as competências e habilidades da BNCC.'
+  },
+  '5º ano': {
+    'Língua Portuguesa': 'Leitura e análise de gêneros discursivos variados; produção de textos argumentativos, jornalísticos e literários; análise linguística aprofundada; práticas de oralidade em contextos públicos, conforme EF05LP da BNCC.',
+    'Matemática': 'Números racionais (frações e decimais); operações com números decimais; porcentagem; geometria (área, volume e ângulos); estatística básica; raciocínio algébrico introdutório, conforme EF05MA da BNCC.',
+    'História': 'O Brasil no contexto americano e mundial; processos de independência; abolição da escravatura; cidadania e direitos humanos na história brasileira, conforme EF05HI da BNCC.',
+    'Geografia': 'O Brasil no mundo: globalização e regionalização; dinâmicas populacionais; questões ambientais e desenvolvimento sustentável, conforme EF05GE da BNCC.',
+    'Ciências': 'Sistema solar; transformações de energia; ciclo da água; biodiversidade brasileira; saúde e qualidade de vida, conforme EF05CI da BNCC.',
+    'Arte': 'Análise e produção em artes visuais, música, dança e teatro; patrimônio cultural imaterial brasileiro; processo criativo e autoexpressão, conforme EF15AR da BNCC.',
+    'Educação Física': 'Esportes, lutas, ginástica e práticas corporais de aventura; corpo, saúde e bem-estar; direitos e responsabilidades nas práticas corporais, conforme EF35EF da BNCC.',
+    'Inglês': 'Aprofundamento das práticas de leitura, escuta, fala e escrita em inglês; gêneros textuais diversificados; reflexão intercultural e identidade, conforme EF05LI da BNCC.',
+    'Religião': 'Ambiente natural e sagrado; tradições religiosas e respeito à vida; diversidade religiosa e convivência ética, conforme EF05ER da BNCC.',
+    'Literatura e Produção Textual': 'Cânones e autores da literatura brasileira e infantojuvenil; análise de recursos estilísticos; produção de gêneros literários com autonomia crescente; letramento literário, conforme EF05LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 5º ano do Ensino Fundamental – Anos Iniciais, conforme as competências e habilidades da BNCC.'
+  },
+  // Anos Finais
+  '6º ano': {
+    'Língua Portuguesa': 'Práticas de linguagem em gêneros textuais diversificados (notícia, conto, poema, artigo de opinião); análise linguística e semiótica; produção textual crítica e autoral; multimodalidade e mídias digitais, conforme EF06LP da BNCC.',
+    'Matemática': 'Números inteiros e racionais; operações e propriedades; razão e proporção; porcentagem; álgebra introdutória (equações e inequações do 1º grau); geometria plana; estatística, conforme EF06MA da BNCC.',
+    'História': 'Mundo antigo: Mesopotâmia, Egito, Grécia e Roma; surgimento das cidades; relações de trabalho e poder na antiguidade; herança cultural dos povos antigos, conforme EF06HI da BNCC.',
+    'Geografia': 'A Terra no espaço; cartografia digital; dinâmicas da natureza (relevo, clima, hidrografia, vegetação); impactos ambientais e sustentabilidade, conforme EF06GE da BNCC.',
+    'Ciências': 'Astronomia; matéria e suas propriedades; células e organismos; saúde e nutrição; tecnologia e sociedade, conforme EF06CI da BNCC.',
+    'Arte': 'Artes visuais, música, dança e teatro: contextos históricos e produções contemporâneas; patrimônio cultural e diversidade; criação artística e crítica de arte, conforme EF69AR da BNCC.',
+    'Educação Física': 'Esportes de marca e precisão; ginásticas de condicionamento e de consciência corporal; lutas; práticas corporais de aventura na natureza, conforme EF67EF da BNCC.',
+    'Inglês': 'Língua inglesa como fenômeno global; leitura e produção de gêneros textuais digitais e impressos; interculturalidade; estratégias de comunicação, conforme EF06LI da BNCC.',
+    'Religião': 'Religiões e filosofias de vida: fundamentos e práticas; diversidade religiosa no Brasil; diálogo inter-religioso e direitos humanos, conforme EF06ER da BNCC.',
+    'Literatura e Produção Textual': 'Gêneros literários clássicos e contemporâneos; análise do texto literário (narrador, personagens, tempo, espaço); produção de narrativas e poemas; letramento literário, conforme EF06LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 6º ano do Ensino Fundamental – Anos Finais, conforme as competências e habilidades da BNCC.'
+  },
+  '7º ano': {
+    'Língua Portuguesa': 'Análise e produção de gêneros argumentativos e de divulgação científica; variação linguística e preconceito; análise morfossintática; leitura crítica da mídia e das redes sociais, conforme EF07LP da BNCC.',
+    'Matemática': 'Números racionais e irracionais; proporcionalidade; álgebra (polinômios, equações e inequações); geometria (ângulos, triângulos, polígonos e círculos); probabilidade e estatística, conforme EF07MA da BNCC.',
+    'História': 'Idade Média: feudalismo, Igreja, Cruzadas; Islamismo; povos africanos e pré-colombianos; formação do mundo moderno, conforme EF07HI da BNCC.',
+    'Geografia': 'Dinâmica populacional mundial; urbanização e industrialização; questões étnico-raciais e culturais; geopolítica e conflitos contemporâneos, conforme EF07GE da BNCC.',
+    'Ciências': 'Ecologia e ecossistemas; evolução dos seres vivos; reprodução; intervenção humana na natureza; energia e suas transformações, conforme EF07CI da BNCC.',
+    'Arte': 'Arte moderna e contemporânea; diversidade cultural nas artes; criação e crítica em múltiplas linguagens; arte e tecnologia, conforme EF69AR da BNCC.',
+    'Educação Física': 'Esportes de rede/parede e campo/taco; ginástica de conscientização corporal; lutas de matrizes indígenas e africanas; lazer e qualidade de vida, conforme EF67EF da BNCC.',
+    'Inglês': 'Aprofundamento das práticas comunicativas em inglês; análise crítica de textos multimodais; produção de textos com autonomia; identidade e cidadania global, conforme EF07LI da BNCC.',
+    'Religião': 'Tradições religiosas orientais; ritos de passagem; sagrado e profano; religião, ciência e filosofia em diálogo, conforme EF07ER da BNCC.',
+    'Literatura e Produção Textual': 'Literatura de língua portuguesa: autores e obras do Brasil e de Portugal; análise de recursos literários; crônica, conto moderno e poesia; produção textual literária com voz autoral, conforme EF07LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 7º ano do Ensino Fundamental – Anos Finais, conforme as competências e habilidades da BNCC.'
+  },
+  '8º ano': {
+    'Língua Portuguesa': 'Práticas discursivas e gêneros textuais de maior complexidade; análise sintática; intertextualidade e interdiscursividade; produção de textos para diferentes finalidades sociais, conforme EF08LP da BNCC.',
+    'Matemática': 'Potências e raízes; números reais; equações do 2º grau; geometria espacial (áreas e volumes); funções; estatística e probabilidade avançadas, conforme EF08MA da BNCC.',
+    'História': 'Era Moderna e Iluminismo; Revolução Industrial; Revoluções Francesa e Americana; escravidão e resistência; processo de independência do Brasil, conforme EF08HI da BNCC.',
+    'Geografia': 'Globalização econômica e cultural; blocos econômicos; energia e geopolítica; questões ambientais globais; Brasil no cenário mundial, conforme EF08GE da BNCC.',
+    'Ciências': 'Físico-química: matéria e energia; reações químicas; ondas e eletromagnetismo; saúde reprodutiva; biotecnologia, conforme EF08CI da BNCC.',
+    'Arte': 'Arte e engajamento social; performance e arte urbana; análise crítica da cultura de massa e da indústria cultural; produção artística colaborativa, conforme EF69AR da BNCC.',
+    'Educação Física': 'Esportes de invasão; ginástica olímpica e artística; lutas; dança e práticas expressivas; saúde, corpo e mídia, conforme EF89EF da BNCC.',
+    'Inglês': 'Língua inglesa e diversidade cultural; análise e produção de gêneros textuais complexos; argumentação e posicionamento crítico em inglês; preparação para contextos acadêmicos e profissionais, conforme EF08LI da BNCC.',
+    'Religião': 'Novas expressões religiosas contemporâneas; religião e direitos humanos; religião, política e cidadania; espiritualidade sem religião, conforme EF08ER da BNCC.',
+    'Literatura e Produção Textual': 'Romantismo e Realismo brasileiro; análise comparativa de obras; produção de textos críticos e ensaísticos; leitura de obras integrais, conforme EF08LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 8º ano do Ensino Fundamental – Anos Finais, conforme as competências e habilidades da BNCC.'
+  },
+  '9º ano': {
+    'Língua Portuguesa': 'Análise aprofundada de gêneros discursivos; projeto de vida e linguagem; produção de gêneros de sustentação de posição (editorial, debate, manifesto); preparação para práticas de linguagem do Ensino Médio, conforme EF09LP da BNCC.',
+    'Matemática': 'Álgebra avançada; geometria analítica introdutória; trigonometria; estatística e probabilidade; matemática financeira; raciocínio lógico e resolução de problemas, conforme EF09MA da BNCC.',
+    'História': 'Século XX: Guerras Mundiais, totalitarismos, Guerra Fria; descolonização; ditadura e redemocratização no Brasil; questões contemporâneas, conforme EF09HI da BNCC.',
+    'Geografia': 'Ordem mundial contemporânea; conflitos geopolíticos; desenvolvimento sustentável; desigualdades sociais e econômicas; cidadania global, conforme EF09GE da BNCC.',
+    'Ciências': 'Química orgânica introdutória; eletricidade e eletrônica; astrofísica; genética e biotecnologia; impactos tecnológicos na sociedade, conforme EF09CI da BNCC.',
+    'Arte': 'Arte, política e ativismo; linguagens artísticas contemporâneas e tecnológicas; produção de projetos artísticos autorais; arte como projeto de vida, conforme EF69AR da BNCC.',
+    'Educação Física': 'Esportes de alto rendimento e lazer; ginástica para a saúde ao longo da vida; práticas corporais e qualidade de vida; esporte, mídia e consumo, conforme EF89EF da BNCC.',
+    'Inglês': 'Uso estratégico da língua inglesa em contextos globais; análise e produção de gêneros textuais acadêmicos e profissionais; projeto de vida e língua inglesa, conforme EF09LI da BNCC.',
+    'Religião': 'Religião, ciência e tecnologia; bioética e religiões; tradições religiosas e projeto de vida; intolerância religiosa e direitos humanos, conforme EF09ER da BNCC.',
+    'Literatura e Produção Textual': 'Modernismo e literatura contemporânea brasileira; leitura de obras integrais; produção de textos literários e crítico-argumentativos; projeto autoral de escrita, conforme EF09LP da BNCC.',
+    default: 'Desenvolvimento das aprendizagens essenciais do 9º ano do Ensino Fundamental – Anos Finais, conforme as competências e habilidades da BNCC.'
+  },
+  // EJA
+  'EJA – Fase I': { default: 'Alfabetização e letramento de jovens e adultos; operações matemáticas fundamentais; leitura e produção de textos do cotidiano; ciências, história e geografia integradas à realidade do estudante, conforme as diretrizes da BNCC e da LDB para a EJA.' },
+  'EJA – Fase II': { default: 'Aprofundamento das práticas de leitura e escrita; matemática aplicada; ciências naturais e humanas contextualizadas à experiência de vida dos estudantes, conforme as diretrizes da BNCC para a EJA.' },
+  'EJA – Fase III': { default: 'Consolidação das aprendizagens do Ensino Fundamental – Anos Finais adaptadas à EJA; língua portuguesa, matemática, ciências, história e geografia com foco na formação cidadã e inserção no mundo do trabalho, conforme a BNCC.' },
+  'EJA – Fase IV': { default: 'Conclusão do Ensino Fundamental na modalidade EJA; aprofundamento de competências para o mundo do trabalho e para a continuidade dos estudos; formação integral e cidadania crítica, conforme a BNCC.' },
+};
+
+function updateEmenta() {
+  const serie = document.getElementById('serie').value;
+  const disciplina = document.getElementById('disciplina').value;
+  const ementaField = document.getElementById('ementa');
+  const hint = document.getElementById('ementa-hint');
+  if (!serie || !disciplina) return;
+  const serieData = EMENTAS[serie];
+  if (!serieData) return;
+  const ementa = serieData[disciplina] || serieData['default'] || '';
+  if (ementa) {
+    ementaField.value = ementa;
+    hint.style.display = 'block';
+  }
+}
+
+// Also trigger ementa when serie changes
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('serie').addEventListener('change', updateEmenta);
+});
+
+function buildCheckGroup(items, containerId, othersFieldId) {
+  const container = document.getElementById(containerId);
+  items.forEach(item => {
+    const label = document.createElement('label');
+    label.className = 'check-item';
+    label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
+    const cb = label.querySelector('input');
+    cb.addEventListener('change', () => {
+      label.classList.toggle('checked', cb.checked);
+      if (item === 'Outros') {
+        document.getElementById(othersFieldId).classList.toggle('visible', cb.checked);
+      }
+    });
+    container.appendChild(label);
+  });
+}
+
+buildCheckGroup(METODOLOGIAS, 'metodologias-container', 'outros-met-field');
+buildCheckGroup(AVALIACOES, 'avaliacao-container', 'outros-aval-field');
+
+function getChecked(containerId) {
+  return [...document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)]
+    .map(cb => cb.value)
+    .filter(v => v !== 'Outros');
+}
+
+function val(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+function generatePrompt() {
+  const professor = val('professor');
+  const escola = val('escola');
+  const ano_letivo = val('ano_letivo');
+  const etapa = val('etapa');
+  const serie = val('serie');
+  const area = val('area');
+  const disciplina = val('disciplina');
+  const periodicidade = val('periodicidade');
+  const carga = val('carga_horaria');
+  const ementa = val('ementa');
+  const recursos = val('recursos');
+
+  // Validação básica
+  if (!professor || !escola || !ano_letivo || !etapa || !serie || !area || !disciplina || !periodicidade || !ementa) {
+    alert('⚠️ Por favor, preencha todos os campos obrigatórios (marcados com *).');
+    return;
+  }
+
+  const mets = getChecked('metodologias-container');
+  const outrosMet = val('outros-met');
+  if (outrosMet) mets.push(outrosMet);
+
+  const avals = getChecked('avaliacao-container');
+  const outrosAval = val('outros-aval');
+  if (outrosAval) avals.push(outrosAval);
+
+  const metodologiasStr = mets.length ? mets.join(', ') : 'A definir pelo professor';
+  const avaliacaoStr = avals.length ? avals.join(', ') : 'A definir pelo professor';
+
+  const prompt = `Você é um especialista em educação e BNCC (Base Nacional Comum Curricular). Sua função é criar Planos de Curso educacionais de alta qualidade, rigorosamente alinhados à BNCC.
+
+═══════════════════════════════════════════════
+DIRETRIZES OBRIGATÓRIAS
+═══════════════════════════════════════════════
+1. COBERTURA TOTAL DAS HABILIDADES BNCC: Você DEVE listar e distribuir TODAS as habilidades previstas pela BNCC para a disciplina e série informadas — nenhuma habilidade pode ser omitida. Use os códigos oficiais (ex: EF06LP01, EF07MA03).
+2. PROGRESSÃO PEDAGÓGICA: As habilidades devem ser distribuídas em sequência lógica e crescente de complexidade entre as 3 Unidades Letivas — do mais simples ao mais complexo, garantindo que cada unidade prepare o estudante para a seguinte.
+3. ORGANIZAÇÃO EM 3 UNIDADES LETIVAS: O plano deve ser estruturado em EXATAMENTE 3 Unidades Letivas. Distribua as habilidades de forma equilibrada e progressiva entre elas.
+4. QUALIDADE PEDAGÓGICA: Articule as metodologias selecionadas com os conteúdos e habilidades de cada unidade.
+5. INCLUSÃO E DIVERSIDADE: Considere a diversidade cultural, regional e a acessibilidade em todas as unidades.
+6. CONTEXTUALIZAÇÃO: Conecte os conteúdos à realidade dos estudantes e a temas contemporâneos.
+7. 10 COMPETÊNCIAS GERAIS DA BNCC: Indique quais competências gerais são desenvolvidas em cada unidade.
+
+═══════════════════════════════════════════════
+DADOS DO PLANO DE CURSO
+═══════════════════════════════════════════════
+Nome do Professor: ${professor}
+Nome da Escola: ${escola}
+Ano Letivo: ${ano_letivo}
+Etapa: ${etapa}
+Série/Ano: ${serie}
+Área do Conhecimento: ${area}
+Disciplina: ${disciplina}
+Periodicidade: ${periodicidade}${carga ? `
+Carga Horária Total: ${carga}` : ``}
+
+EMENTA:
+${ementa}
+
+METODOLOGIAS ADOTADAS: ${metodologiasStr}
+${recursos ? `RECURSOS DIDÁTICOS: ${recursos}` : ``}
+
+AVALIAÇÃO (conforme LDB — contínua, cumulativa, prevalência dos aspectos qualitativos):
+Instrumentos selecionados: ${avaliacaoStr}
+
+═══════════════════════════════════════════════
+ESTRUTURA OBRIGATÓRIA DO PLANO
+═══════════════════════════════════════════════
+
+** PASSO 1 — MAPEAMENTO COMPLETO DE HABILIDADES **
+Antes de estruturar as unidades, liste em formato de tabela TODAS as habilidades da BNCC previstas para ${disciplina} no ${serie}, com:
+  - Código oficial da habilidade
+  - Descrição completa da habilidade (conforme o documento oficial da BNCC)
+  - Unidade Letiva em que será trabalhada (1, 2 ou 3)
+ATENÇÃO: Nenhuma habilidade prevista na BNCC para esta série e disciplina pode ficar de fora.
+
+** PASSO 2 — ESTRUTURE O PLANO COMPLETO **
+
+---------------------------------------------
+SEÇÃO 1 · IDENTIFICAÇÃO E EMENTA
+---------------------------------------------
+(Reproduza os dados de identificação e a ementa acima)
+
+---------------------------------------------
+SEÇÃO 2 · COMPETÊNCIAS GERAIS DA BNCC
+---------------------------------------------
+Liste as 10 competências gerais da BNCC e descreva como esta disciplina contribui para o desenvolvimento de cada uma ao longo do ano letivo.
+
+---------------------------------------------
+SEÇÃO 3 · ORGANIZAÇÃO CURRICULAR
+---------------------------------------------
+UNIDADE LETIVA 1 — [Título sugestivo]
+Período: aproximadamente 1º trimestre / 1º terço do ano letivo
+Competências Gerais da BNCC contempladas (indique os números):
+Habilidades da BNCC desta unidade (código + descrição completa de cada uma):
+Objetos de Conhecimento / Conteúdos:
+  - Liste todos os conteúdos correspondentes às habilidades desta unidade
+Objetivos de Aprendizagem:
+  - Liste objetivos claros e mensuráveis, um por habilidade trabalhada
+Sequência Didática (mínimo 5 etapas detalhadas):
+  Etapa 1 — ...
+  Etapa 2 — ...
+  Etapa 3 — ...
+  Etapa 4 — ...
+  Etapa 5 — ...
+Metodologias utilizadas nesta unidade:
+Recursos didáticos:
+Instrumentos de Avaliação da unidade:
+Sugestões de atividades inclusivas e adaptações:
+
+---
+
+UNIDADE LETIVA 2 — [Título sugestivo]
+Período: aproximadamente 2º trimestre / 2º terço do ano letivo
+(Mesma estrutura da Unidade 1, com habilidades de complexidade intermediária, articuladas com o que foi desenvolvido na Unidade 1)
+
+---
+
+UNIDADE LETIVA 3 — [Título sugestivo]
+Período: aproximadamente 3º trimestre / 3º terço do ano letivo
+(Mesma estrutura, com habilidades de maior complexidade, síntese e consolidação das aprendizagens do ano)
+
+---------------------------------------------
+SEÇÃO 4 · CRITÉRIOS GERAIS DE AVALIAÇÃO
+---------------------------------------------
+Descreva os critérios gerais de avaliação para o ano letivo, alinhados à LDB (art. 24) e às habilidades da BNCC. Explique como cada instrumento selecionado será utilizado ao longo das unidades.
+
+---------------------------------------------
+SEÇÃO 5 · REFERÊNCIAS BIBLIOGRÁFICAS (ABNT)
+---------------------------------------------
+Inclua: documento oficial da BNCC, livro(s) didático(s) adotado(s) para ${disciplina} no ${serie}, e outros recursos pertinentes.
+
+---------------------------------------------
+SEÇÃO 6 · ADAPTAÇÕES CURRICULARES E INCLUSÃO
+---------------------------------------------
+Orientações para estudantes com necessidades educacionais específicas (NEE), adaptações de atividades, estratégias de acessibilidade e de educação inclusiva.
+
+═══════════════════════════════════════════════
+INSTRUÇÃO FINAL
+═══════════════════════════════════════════════
+Após gerar o plano completo em texto, disponibilize-o também em formato Word (.docx) para que o professor possa fazer o download, imprimir e editar.`
+  document.getElementById('prompt-output').textContent = prompt;
+  const outputSection = document.getElementById('output-section');
+  outputSection.style.display = 'block';
+  setTimeout(() => outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  });
+}
+</script>
+</body>
+</html>
